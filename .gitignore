@@ -6,8 +6,9 @@ __pycache__/
 # Datasets compressed files
 .gz
 .zip
-datasets/Video_Games.json
-datasets/amazon_ml*
+datasets/*
+!datasets/english_stopwords.txt
+
 
 # C extensions
 *.so
