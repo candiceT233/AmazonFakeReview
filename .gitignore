@@ -6,8 +6,8 @@ __pycache__/
 # Datasets compressed files
 .gz
 .zip
-datasets/
-datazip/
+datasets/Video_Games.json
+datasets/amazon_ml*
 
 # C extensions
 *.so
