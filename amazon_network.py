@@ -10,6 +10,7 @@ from sklearn import preprocessing
 import math
 from statistics import mean
 import random
+import time
 
 # Video Game product reviews
 amazon_data="datasets/Video_Games_5.json"
@@ -65,7 +66,6 @@ def normalize(df):
     return df
 
 def observe_dataset(df):
-
     unverified_voted = []
     verified_novote = []
     voted_reviews = []
@@ -121,31 +121,30 @@ def df_to_dict(df):
     # pick out nodes and weights, stored in list and dictionary
     graph_dict = {}
 
-    for index, row in df.iterrows():
-        n1 = row['reviewerID']
-        n2 = row['asin']
-        rate = row['overall']
-        key = (n1,n2)
-        graph_dict[key] = {"rate": rate, "vote": row["vote"], "verified": row["verified"]}
-
 
 
     return graph_dict
 
-def nodes_to_graph(graph_dict):
+def df_to_graph(df):
+
+    edges = []
+
+    for index, row in df.iterrows():
+        n1 = row['reviewerID']
+        n2 = row['asin']
+        edges.append((n1,n2))
+
     print("Adding nodes to graph ...")
     # add nodes to graph
-    u_nodes, p_nodes = zip(*graph_dict.keys()) # key = edge = (usernode, productnode)
+    u_nodes, p_nodes = zip(*edges) # key = edge = (usernode, productnode)
     nodes = list(set(u_nodes + p_nodes))
     print(f"Users[{len(u_nodes)}] , Products[{len(p_nodes)}], Nodes[{len(nodes)}]")
 
     G = nx.DiGraph()
     G.add_nodes_from(nodes)
+    G.add_edges_from(edges)
 
-    for key in graph_dict.keys():
-      G.add_edge(key[0], key[1])
-
-    nx.set_edge_attributes(G, graph_dict)
+    #nx.set_edge_attributes(G, graph_dict)
 
     return G
 
@@ -187,14 +186,14 @@ def plot_small_df(df):
     node_lb[n2] = SG.in_degree(n2)
     node_lb[n1] = SG.in_degree(n1)
 
-  plt.figure(figsize=(10,10))
+  plt.figure(figsize=(20,20))
 
-  #pos=nx.drawing.nx_pydot.pydot_layout(SG, prog='fdp')
-  #nx.draw(SG,pos)
-  #nx.draw_networkx_labels(SG,pos,node_lb)
+  pos=nx.drawing.nx_pydot.pydot_layout(SG, prog='fdp')
+  nx.draw(SG,pos)
+  nx.draw_networkx_labels(SG,pos,node_lb)
 
-  nx.draw_shell(SG)
-  nx.draw_networkx_labels(SG,node_lb)
+  #nx.draw_shell(SG)
+  #nx.draw_networkx_labels(SG,node_lb)
   plt.draw()
   plt.savefig('outputs/amazon_network_1000n.png')
 
@@ -240,60 +239,48 @@ def plot_degree_dens(G):
 # https://networkx.org/documentation/networkx-1.10/reference/generated/networkx.algorithms.shortest_paths.generic.average_shortest_path_length.html
 def get_astp(G):
   print("Getting averaged shortest path ...")
-  UG = G.to_undirected()
+  output_path='outputs/amazon_network_aveSTP_cluster.txt'
 
-  #def write_nodes_number_and_shortest_paths(G,
-  n_samples=5000
-  output_path='outputs/amazon_network_aveSTP_sampled.txt'
-
+  length = nx.average_shortest_path_length(G)
+  ave_clus = nx.average_clustering(G)
   with open(output_path, encoding='utf-8', mode='w+') as f:
-      for component in nx.connected_components(UG):
-          component_ = UG.subgraph(component)
-          nodes = component_.nodes()
-          lengths = []
-          for _ in range(n_samples):
-              n1, n2 = random.choices(list(nodes), k=2)
-              length = nx.shortest_path_length(component_, source=n1, target=n2)
-              lengths.append(length)
-          f.write(f'Nodes num: {len(nodes)}, shortest path mean: {mean(lengths)} \n')
+      f.write(f'Averate Clustering Coefficients: {ave_clus}\n')
+      f.write(f'Nodes num: {len(G.nodes())}, average shortest path: {length}\n')
 
-def ave_clus(G):
-    output_path='outputs/amazon_network_ave_clustering.txt'
-    ave_clus = nx.average_clustering(G)
-    with open(output_path, mode='w+') as f:
-      f.write(f'Averate Clustering Coefficients: {ave_clus}')
-
-    print(f'Averate Clustering Coefficients: {ave_clus}\n')
-    # 0.001766933069436154 is quite low!
 
 if __name__ == "__main__":
     # import dataset
     file = amazon_data
+
+    start = time.time()
     df = import_data(file)
     df = normalize(df)
+    read_t = time.time()
+    print(f"\nRead data time : {read_t - start}\n")
+
     observe_dataset(df)
 
-    graph_dict = df_to_dict(df)
 
-    G = nodes_to_graph(graph_dict)
+    G = df_to_graph(df)
+    graph_t = time.time()
+    print(f"\nAdd to graph time : {graph_t - read_t}\n")
 
     # plot a small network structure sneakpeak
-    #plot_small_df(df) # TODO: TypeError: cannot unpack non-iterable int object
+    plot_small_df(df)
 
     # plot histogram
     plot_hist(G)
 
     """
     # realword network has:
-    # (1) power law distribution
-    # (2) high clustering coefficients
-    # (3) shorts average path length
+    # (1) power law distribution (y)
+    # (2) high clustering coefficients (n)
+    # (3) shorts average path length (y)
     """
     # plot degree density
     plot_degree_dens(G)
 
-    # get averate clustering coefficients
-    ave_clus(G) # TODO: why gets 0.0?
-
     # get average shortest path
-    #get_astp(G)
+    get_astp(G)
+    end = time.time()
+    print(f"\nTotal runtime : {end - start}\n")

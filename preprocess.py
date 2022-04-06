@@ -40,6 +40,7 @@ import seaborn as sns
 from collections import Counter
 import math
 import string
+import time
 
 from sklearn import preprocessing
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -101,74 +102,25 @@ def read_data(file):
 def normalize(df):
     # normalize user rating to [-1,1], original scale [0,5]
     df["overall"] = (df["overall"] -2.5 ) / 2.5
-    print(f'user rating normalized scale: [{df["overall"].min()}, {df["overall"].max()}]')
+
 
     # normalize votes to [0,1]
     df["vote"] = df["vote"].replace(',','',regex=True)
     df["vote"] = df["vote"].astype(int)
     df["vote"] = df["vote"] /df["vote"].abs().max()
-    print(f'vote normalized scale: [{df["vote"].min()}, {df["vote"].max()}]')
 
     # change verified to -1 vs. 1
     df["verified"] = df["verified"].replace(0,-1)
+
+    print("#--------------- Normalized Data ---------------#")
+    print(f'user rating normalized scale: [{df["overall"].min()}, {df["overall"].max()}]')
+    print(f'vote normalized scale: [{df["vote"].min()}, {df["vote"].max()}]')
     print(f'verified value scale: [{df["verified"].min()}, {df["verified"].max()}]')
+    print()
+
 
     return df
 
-def observe_dataset(df):
-    # observe datasets
-    unverified_voted = []
-    verified_novote = []
-    voted_reviews = []
-    noreviews = []
-
-    for index, row in df.iterrows():
-        if row['verified'] == -1:
-          if row['vote'] > 0:
-            rowdict = {'user': row['reviewerID'],
-                       'verified': row['verified'],
-                       'asin':row['asin'],
-                       'rating': row['overall'],
-                       'vote': row['vote']}
-            unverified_voted.append(rowdict)
-
-        elif row['vote'] == 0:
-          rowdict = {'user': row['reviewerID'],
-                     'verified': row['verified'],
-                     'asin':row['asin'],
-                     'rating': row['overall'],
-                     'vote': row['vote']}
-          verified_novote.append(rowdict)
-
-        else:
-          if row['reviewText'] or row['summary']:
-            rowdict = {'user': row['reviewerID'],
-                       'asin':row['asin'],
-                       'rating': row['overall'],
-                       'vote': row['vote'],
-                       'reviewText':row['reviewText'],
-                       'summary':row['summary']}
-            voted_reviews.append(rowdict)
-
-        if (not row['reviewText']) and (not row['summary']):
-          rowdict = {'user': row['reviewerID'],
-                     'asin':row['asin'],
-                     'rating': row['overall'],
-                     'vote': row['vote'],
-                     'verified': row['verified'],
-                     'reviewText':row['reviewText'],
-                     'summary':row['summary']}
-          noreviews.append(rowdict)
-
-    print(f"Unverified reviews received vote: {len(unverified_voted)}")
-    print(f"Verified reviews received received no vote {len(verified_novote)}")
-    print(f"Verified reviews no vote ratio {len(verified_novote)/len(u_nodes)}")
-    print(f"Verified voted reviews: {len(voted_reviews)}")
-    print(f"No reviews: {len(noreviews)}")
-
-
-    for i in range(len(noreviews)):
-        print(noreviews[i])
 
 def text_proc(df):
     print("Preprocessing review texts...")
@@ -346,9 +298,7 @@ def create_graph(graph_dict):
 
     G = nx.DiGraph()
     G.add_nodes_from(nodes)
-
-    for key in graph_dict.keys():
-      G.add_edge(key[0], key[1])
+    G.add_edges_from(list(graph_dict.keys()))
 
     nx.set_edge_attributes(G, graph_dict)
     return G
@@ -412,12 +362,18 @@ def get_fairness(df):
     return df
 
 if __name__ == "__main__":
+
+    start = time.time()
     df = read_data(amazon_data)
     df = normalize(df)
+    read_t = time.time()
+    print(f"\nRead data time : {read_t - start}\n")
 
     # get fairness feature
     df = get_fairness(df) #working
     df = get_tfidf(df) #working
+    proc_t = time.time()
+    print(f"\nFeature extraction time : {proc_t - read_t}\n")
 
     # dummy values
     #df['tfidf'] = np.random.rand(df.shape[0])
@@ -425,6 +381,12 @@ if __name__ == "__main__":
 
     df1 = get_target_1(df) # working
     df2 = get_target_2(df) # working
+    label_t = time.time()
+    print(f"\nLabeling time : {label_t - proc_t}\n")
+
 
     output_for_ml(df1)
     output_for_ml(df2,"datasets/amazon_ml_2.csv")
+    end = time.time()
+    print(f"\nOutput time : {end - label_t}\n")
+    print(f"\nOverall runtime : {end - start}\n")

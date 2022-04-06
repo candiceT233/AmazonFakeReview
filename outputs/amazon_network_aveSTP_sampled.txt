@@ -1,1 +1,0 @@
-Nodes num: 72630, shortest path mean: 4.2856 
