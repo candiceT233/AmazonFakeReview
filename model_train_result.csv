@@ -1,5 +1,0 @@
-,name,accuracy,recall,f1,filename,run_time
-0,knn,0.752,0.857,0.707,amazon_ml_1.csv,0.0
-1,svm,0.735,0.945,0.633,amazon_ml_1.csv,0.0
-2,Ensemble BaggingClassifier,0.753,0.871,0.704,amazon_ml_1.csv,0.0
-3,Ensemble AdaBoostClassifier,0.754,0.866,0.705,amazon_ml_1.csv,0.0
