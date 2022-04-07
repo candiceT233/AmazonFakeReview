@@ -20,7 +20,8 @@ for model_name, model_api in models_api.items():
             f = getattr(model_api, model_name + '_model')
             result = f(filename)
             end_time = time.time()
-            result['run_time'] = round(end_time - start_time, 3)
+            result['run_time_sec'] = round(end_time - start_time, 3)
+            print(f"Run Time (sec): {result['run_time']}")
             results.append(result)
         except Exception as e:
             continue
