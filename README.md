@@ -31,3 +31,7 @@ python3 amazon_network.py
 ## Output
 ML Results: model_train_result.txt \
 Other Results in outputs file.
+
+## Reference
+- Justifying recommendations using distantly-labeled reviews and fined-grained aspects \
+Jianmo Ni, Jiacheng Li, Julian McAuley Empirical Methods in Natural Language Processing (EMNLP), 2019
