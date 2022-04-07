@@ -1,5 +1,7 @@
 # AmazonFakeReview
 
+## TODO:
+Add Epinion network code and output
 
 ## Preprocess Data
 
