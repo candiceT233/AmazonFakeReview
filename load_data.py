@@ -42,8 +42,9 @@ def evaluate_model(y_test, y_pred, name='knn'):
     results = {
         'name': name,
         'accuracy': round(accuracy, 3),
+        'precision': round(precision, 3),
         'recall': round(recall, 3),
-        'f1': round(f1, 3)
+        'f1_score': round(f1, 3)
     }
     print('results:', results)
     return results

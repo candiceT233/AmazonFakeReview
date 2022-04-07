@@ -18,13 +18,13 @@ for model_name, model_api in models_api.items():
         try:
             start_time = time.time()
             f = getattr(model_api, model_name + '_model')
-            end_time = time.time()
             result = f(filename)
-            result['run_time'] = round(end_time - start_time, 4)
+            end_time = time.time()
+            result['run_time'] = round(end_time - start_time, 3)
             results.append(result)
         except Exception as e:
             continue
 
 import  pandas as pd
 df = pd.DataFrame(results)
-df.to_csv('model_train_result.csv')
+df.to_csv('outputs/model_train_result.csv')
