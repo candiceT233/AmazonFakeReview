@@ -8,22 +8,16 @@ edge weight := w1*Goodness + w2*Fairness
 - product node: averaged overall rating from all users [-1, 1] (normalized)
 
 # edge attribute definition:
-- Goodness: user node vote (normalized) from scale [0,1]
+- Goodness: TF-IDF value
 - Fairness: difference of user rating and averaged product overall rating value:
 -- (user_rating - product_rating) + 1
 -- if product rating is 1, user rating is -1, F = -|-1-1| +1 = -1 (lowest)
 -- if product rating is 1, user rating is 0, then F = -|0-1| +1= 0
 -- if product rating is 0, user rating is 0, F = -0 + 1 = 1 (highest)
 
-- (1) Ground truth (label): -1 vs. 1
+- Ground truth (label): -1 vs. 1
 Unverified: -1
 Verified: (0 + normalized vote + TF-IDF value)/3
-negative values assign to -1
-positive value assign to 1
-Predit Fraud Reviews using TD-IDF, not per user base, assume 50% fake
-- (2) Ground truth (label): -1 vs. 1
-Unverified: -1
-Verified: (0 + TF-IDF value)/2
 negative values assign to -1
 positive value assign to 1
 Predit Fraud Reviews using TD-IDF, not per user base, assume 50% fake
@@ -217,7 +211,7 @@ def output_for_ml(df,filename="datasets/amazon_ml_1.csv"):
        'summary', 'tfidf', 'fairness', 'is_trust']
     out_feat = ['EdgeID','goodness','fairness','is_trust']
     # TODO
-    df = df.rename(columns={'vote':'goodness'})
+    df = df.rename(columns={'tfidf':'goodness'})
 
     # ['reviewerID','asin','vote','fairness','is_strust']
     # combine reviewerID and asin into single edge ID
@@ -229,14 +223,7 @@ def output_for_ml(df,filename="datasets/amazon_ml_1.csv"):
     df = df[out_feat]
     df.to_csv(filename)
 
-def get_target_1(df):
-    score_list = list(df['tfidf'])
-
-    percent = 50
-    values = list(sorted(np.asarray(score_list, dtype=float))[:int(len(score_list)/(100/percent))])
-    threshold = max(values)
-
-    df['tfidf'] = df['tfidf'] - threshold
+def get_target(df):
 
     trust_list = []
     for index, row in df.iterrows():
@@ -246,36 +233,24 @@ def get_target_1(df):
         val += row['tfidf']
         val += row['vote']
         val = val/3
-        if val < 0:
-            trust_list.append(-1)
-        else:
-            trust_list.append(1)
-    df['is_trust'] = trust_list
-    return df
+        trust_list.append(val)
 
-def get_target_2(df):
-
-    score_list = list(df['tfidf'])
-
+    # Ground Truth to be ~ 50% negative and positive
     percent = 50
-    values = list(sorted(np.asarray(score_list, dtype=float))[:int(len(score_list)/(100/percent))])
+    values = list(sorted(np.asarray(trust_list, dtype=float))[:int(len(trust_list)/(100/percent))])
     threshold = max(values)
 
-    df['tfidf'] = df['tfidf'] - threshold
-
-    trust_list = []
-    for index, row in df.iterrows():
-        val = 0
-        if row['verified'] < 0:
-            val += -1
-        val += row['tfidf']
-        val = val/2
-        if val < 0:
-            trust_list.append(-1)
+    trust_val = []
+    for val in trust_list:
+        if val < threshold:
+            trust_val.append(-1)
         else:
-            trust_list.append(1)
-    df['is_trust'] = trust_list
+            trust_val.append(1)
+
+
+    df['is_trust'] = trust_val
     return df
+
 
 def get_graph_dict(df):
     print("Storing nodes and edges into dictionary ...")
@@ -322,17 +297,22 @@ def get_ave_rating(df,graph_dict):
     for node in p_nodes:
         edges = G.in_edges(node)
         #print(edges)
-        ave_rating = 0
+        sum_rating = 0
         for edge in edges:
-            ave_rating += graph_dict[edge]['rate']
-        ave_rating = ave_rating/len(edges)
-        p_dict[node] = {"attr": ave_rating }
+            sum_rating += graph_dict[edge]['rate']
+        p_dict[node] = {"sum_rating": sum_rating, "num_rate": len(edges) }
 
-    # insert average rating to dataset for corresponding product node
+    # insert as average rating to dataset for corresponding product edge
+    # remove the rating of current edge
     rate_list = []
     for index, row in df.iterrows():
         node = row['asin']
-        rate_list.append(p_dict[node]['attr'])
+        num_rate = p_dict[node]['num_rate']
+        if (num_rate - 1 ) == 0:
+            ave_rate = p_dict[node]['sum_rating'] - row['overall']
+        else:
+            ave_rate = (p_dict[node]['sum_rating'] - row['overall'])/(p_dict[node]['num_rate'] -1)
+        rate_list.append(ave_rate)
 
     df['ave_rate'] = rate_list
 
@@ -370,8 +350,9 @@ if __name__ == "__main__":
     print(f"\nRead data time : {read_t - start}\n")
 
     # get fairness feature
-    df = get_fairness(df) #working
     df = get_tfidf(df) #working
+    df = get_fairness(df) #working
+
     proc_t = time.time()
     print(f"\nFeature extraction time : {proc_t - read_t}\n")
 
@@ -379,14 +360,12 @@ if __name__ == "__main__":
     #df['tfidf'] = np.random.rand(df.shape[0])
     #df['fairness'] = np.random.rand(df.shape[0])
 
-    df1 = get_target_1(df) # working
-    df2 = get_target_2(df) # working
+    df = get_target(df) # working
     label_t = time.time()
     print(f"\nLabeling time : {label_t - proc_t}\n")
 
 
-    output_for_ml(df1)
-    output_for_ml(df2,"datasets/amazon_ml_2.csv")
+    output_for_ml(df)
     end = time.time()
     print(f"\nOutput time : {end - label_t}\n")
     print(f"\nOverall runtime : {end - start}\n")
