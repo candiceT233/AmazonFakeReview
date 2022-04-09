@@ -3,11 +3,12 @@ import time
 from model_api import *
 #import numpy as
 
+#     'svm': svm,
+#    'ensembleBaggingClassifier': ensembleBaggingClassifier,
+
 filenames = ['amazon_ml_1.csv']
 models_api = {
     'knn': knn,
-    'svm': svm,
-    'ensembleBaggingClassifier': ensembleBaggingClassifier,
     'ensembleAdaBoostClassifier': ensembleAdaBoostClassifier,
     'ensembleVoting': ensembleVoting
 }

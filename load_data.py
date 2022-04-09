@@ -8,7 +8,7 @@ from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import train_test_split
 
 BASE_PATH = './datasets'
-FILENAME = 'amazon_ml_2.csv'
+FILENAME = 'amazon_ml_1.csv'
 FEATURES = ['goodness', 'fairness']
 LABEL = ['is_trust']
 

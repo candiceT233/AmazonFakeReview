@@ -186,7 +186,7 @@ def plot_small_df(df):
     node_lb[n2] = SG.in_degree(n2)
     node_lb[n1] = SG.in_degree(n1)
 
-  plt.figure(figsize=(20,20))
+  plt.figure(figsize=(20,10))
 
   pos=nx.drawing.nx_pydot.pydot_layout(SG, prog='fdp')
   nx.draw(SG,pos)
@@ -222,7 +222,7 @@ def plot_hist(G):
 # https://seaborn.pydata.org/generated/seaborn.kdeplot.html
 def plot_degree_dens(G):
   print("Plot degree density graph ...")
-  plt.figure(figsize=(10, 10))
+  plt.figure(figsize=(8, 4))
   x = list(G.nodes)
   y = []
   for node in x:
@@ -230,6 +230,9 @@ def plot_degree_dens(G):
 
   # Make density plot
   sns.kdeplot(y)
+  plt.title("Degree Density Distribution")
+  plt.ylabel("Degree Density")
+  plt.xlabel("Degree")
   plt.xlim([0,1500])
   plt.savefig('outputs/amazon_network_degree_density.png')
 
@@ -281,6 +284,8 @@ if __name__ == "__main__":
     plot_degree_dens(G)
 
     # get average shortest path
+    #"""
     get_astp(G)
     end = time.time()
     print(f"\nTotal runtime : {end - start}\n")
+    #"""
