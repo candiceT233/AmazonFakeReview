@@ -10,6 +10,8 @@ from model_api import *
 filenames = ['amazon_ml_1.csv']
 models_api = {
     'knn': knn,
+    'svm': svm,
+    'ensembleBaggingClassifier': ensembleBaggingClassifier,
     'ensembleAdaBoostClassifier': ensembleAdaBoostClassifier
 }
 
