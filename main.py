@@ -5,12 +5,12 @@ from model_api import *
 
 #     'svm': svm,
 #    'ensembleBaggingClassifier': ensembleBaggingClassifier,
+# 'ensembleVoting': ensembleVoting
 
 filenames = ['amazon_ml_1.csv']
 models_api = {
     'knn': knn,
-    'ensembleAdaBoostClassifier': ensembleAdaBoostClassifier,
-    'ensembleVoting': ensembleVoting
+    'ensembleAdaBoostClassifier': ensembleAdaBoostClassifier
 }
 
 results = []
@@ -22,11 +22,12 @@ for model_name, model_api in models_api.items():
             result = f(filename)
             end_time = time.time()
             result['run_time_sec'] = round(end_time - start_time, 3)
-            print(f"Run Time (sec): {result['run_time']}")
+            print('results:', result)
+            #print(f"Run Time (sec): {result['run_time_sec']}")
             results.append(result)
         except Exception as e:
             continue
 
 import  pandas as pd
-df = pd.DataFrame(results)
+df = pd.DataFrame.from_dict(results)
 df.to_csv('outputs/model_train_result.csv')

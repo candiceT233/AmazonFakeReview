@@ -1,5 +1,3 @@
-,name,accuracy,precision,recall,f1_score,filename,run_time
-0,knn,0.754,0.791,0.859,0.708,amazon_ml_1.csv,39.247
-1,svm,0.736,0.737,0.944,0.633,amazon_ml_1.csv,1711.245
-2,Ensemble BaggingClassifier,0.754,0.784,0.873,0.704,amazon_ml_1.csv,389.646
-3,Ensemble AdaBoostClassifier,0.757,0.793,0.862,0.711,amazon_ml_1.csv,58.983
+,name,accuracy,precision,recall,f1_score,filename,run_time_sec
+0,knn,0.752,0.789,0.859,0.707,amazon_ml_1.csv,39.34
+1,Ensemble AdaBoostClassifier,0.755,0.788,0.867,0.707,amazon_ml_1.csv,65.787

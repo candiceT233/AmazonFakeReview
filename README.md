@@ -26,7 +26,6 @@ python3 amazon_network.py
     - soc-sign-epinions.txt
     - english_stopwords.txt
     - amazon_ml_1.csv
-    - amazon_ml_2.csv
 
 ## Output
 ML Results: model_train_result.txt \

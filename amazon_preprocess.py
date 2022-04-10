@@ -103,8 +103,9 @@ def normalize(df):
     df["vote"] = df["vote"].astype(int)
     df["vote"] = df["vote"] /df["vote"].abs().max()
 
-    # change verified to -1 vs. 1
+    # change verified to -1 vs. 0
     df["verified"] = df["verified"].replace(0,-1)
+    df["verified"] = df["verified"].replace(1,0)
 
     print("#--------------- Normalized Data ---------------#")
     print(f'user rating normalized scale: [{df["overall"].min()}, {df["overall"].max()}]')
