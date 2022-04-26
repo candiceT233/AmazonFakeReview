@@ -3,14 +3,11 @@ import time
 from model_api import *
 #import numpy as
 
-#     'svm': svm,
-#    'ensembleBaggingClassifier': ensembleBaggingClassifier,
-# 'ensembleVoting': ensembleVoting
-
 filenames = ['amazon_ml_1.csv']
 models_api = {
     'knn': knn,
     'svm': svm,
+    'ensembleVoting': ensembleVoting,
     'ensembleBaggingClassifier': ensembleBaggingClassifier,
     'ensembleAdaBoostClassifier': ensembleAdaBoostClassifier
 }
@@ -32,4 +29,7 @@ for model_name, model_api in models_api.items():
 
 import  pandas as pd
 df = pd.DataFrame.from_dict(results)
-df.to_csv('outputs/model_train_result.csv')
+
+stamp= str(round(time.time()))[-4:]
+
+df.to_csv(f'outputs/{stamp}_model_train_result.csv')
