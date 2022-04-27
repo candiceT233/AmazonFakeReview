@@ -22,10 +22,10 @@ python3 amazon_network.py
 
 ## Input
 - datasets
-    - Video_Games_5.json
-    - soc-sign-epinions.txt
+    - Video_Games_5.json ()
+    - soc-sign-epinions.txt ()
     - english_stopwords.txt
-    - amazon_ml_1.csv
+    - amazon_ml_1.csv (generated from amazon_preprocess.py)
 
 ## Output
 ML Results: model_train_result.txt \
