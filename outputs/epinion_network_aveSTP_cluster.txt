@@ -1,2 +1,3 @@
 Averate Clustering Coefficients: 0.09561744905322282
-Nodes num: 119130, shortest path mean: 4.1786 
+Largest connected component has 119130 nodes
+Sampled Nodes : 5000, shortest path mean: 4.1636 
