@@ -1,0 +1,2 @@
+Averate Clustering Coefficients: 0.09561744905322282
+Nodes num: 119130, shortest path mean: 4.1786 

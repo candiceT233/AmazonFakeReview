@@ -18,18 +18,19 @@ python3 main.py
 ## Observe Datasets as Networks
 ```bash
 python3 amazon_network.py
+python3 epinion_network.py
 ```
 
 ## Input
-- datasets
-    - Video_Games_5.json ()
-    - soc-sign-epinions.txt ()
-    - english_stopwords.txt
+- datasets (put in this folder)
+    - Video_Games_5.json (https://nijianmo.github.io/amazon/index.html#subsets)
+    - soc-sign-epinions.txt (https://snap.stanford.edu/data/soc-sign-epinions.html)
+    - english_stopwords.txt (https://pythonspot.com/nltk-stop-words/)
     - amazon_ml_1.csv (generated from amazon_preprocess.py)
 
 ## Output
 ML Results: model_train_result.txt \
-Other Results in outputs file.
+Other Results are in the outputs file.
 
 ## Reference
 - Justifying recommendations using distantly-labeled reviews and fined-grained aspects \

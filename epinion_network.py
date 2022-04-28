@@ -2,7 +2,11 @@ import os
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import networkx as nx  # version networkx=2.3
+#import pkg_resources
+#pkg_resources.require("networkx==2.3")
+#pip install networkx==2.3
+import networkx as nx
+import random
 import seaborn as sns
 from collections import Counter
 import time
@@ -44,7 +48,7 @@ def df_to_graph(df):
     # add nodes to graph
     u_nodes, p_nodes = zip(*edges) # key = edge = (usernode, productnode)
     nodes = list(set(u_nodes + p_nodes))
-    print(f"Users[{len(u_nodes)}] , Products[{len(p_nodes)}], Nodes[{len(nodes)}]")
+    print(f"Nodes Number[{len(nodes)}]")
 
     G = nx.DiGraph()
     G.add_nodes_from(nodes)
@@ -53,18 +57,6 @@ def df_to_graph(df):
 
 
 def compute_product_goodness_fairness(df):
-    """
-    product node:
-    - Goodness: averaged overall sign from all users [-1, 1]
-      If A(10 <+1>) ==> 10,B(5 <-1>) ==> -5, C(2 <+1>, 3 <-1> ==> -1).
-      Then normalize the goodness.
-    - Fairness: normalized number of users rated across the whole datasets [-1, 1]
-      If 10 user node rate A product,20 user node rate B product
-      Then A fairness10/20=0.5, B fairness=20/20=1
-
-      If 8 user node rate C product, max-in-degree=20
-      Then (8-10)/(20/2)=?
-    """
     p_dict = {}
     graph_dict = df_to_dict(df)
     u_nodes, p_nodes = zip(*graph_dict.keys())
@@ -232,15 +224,55 @@ def plot_degree_dens(G):
 # @markdown output: Nodes num: 55223, shortest path mean: 3.6516
 
 # https://networkx.org/documentation/networkx-1.10/reference/generated/networkx.algorithms.shortest_paths.generic.average_shortest_path_length.html
-def get_astp(G):
-  print("Getting averaged shortest path ...")
-  output_path=f'{OUT_PATH}/epinion_network_aveSTP_cluster.txt'
 
-  length = nx.average_shortest_path_length(G)
-  ave_clus = nx.average_clustering(G)
-  with open(output_path, encoding='utf-8', mode='w+') as f:
-      f.write(f'Averate Clustering Coefficients: {ave_clus}\n')
-      f.write(f'Nodes num: {len(G.nodes())}, average shortest path: {length}\n')
+def sample_astp(G,n_samples=50):
+    nodes=G.nodes()
+    lengths = []
+
+    #n1, n2 = random.choices(list(nodes), k=2)
+    while len(lengths) == 0:
+        for n in range(n_samples):
+            n1, n2 = random.choices(list(nodes), k=2)
+            length = nx.shortest_path_length(G, source=n1, target=n2)
+            lengths.append(length)
+    """
+    samp = 0
+    while samp <= n_samples:
+        n1, n2 = random.choices(list(nodes), k=2)
+        if G.has_edge(n1, n2):
+            length = nx.shortest_path_length(G, source=n1, target=n2)
+            lengths.append(length)
+            samp += 1
+            """
+
+    return sum(lengths)/len(lengths)
+
+def get_astp(G):
+    astp_output=f'{OUT_PATH}/epinion_network_aveSTP_cluster.txt'
+    outstr = []
+
+    ave_clus = nx.average_clustering(G)
+    outstr.append(f'Averate Clustering Coefficients: {ave_clus}\n')
+    print(outstr[0])
+
+    # get averaged shortest path
+    UG = G.to_undirected()
+    print("Getting largest connected component...")
+    largest_cc = max(nx.connected_components(UG), key=len)
+    SG = UG.subgraph(largest_cc)
+    outstr.append(f"Largest connected component has {len(largest_cc)} nodes\n")
+    print(outstr[1])
+    print("Getting sampled averaged shortest path ...")
+
+    #length = nx.average_shortest_path_length(SG) # takes too long
+    n_samples=5000
+    length = sample_astp(SG,n_samples)
+    outstr.append(f'Sampled Nodes : {n_samples}, shortest path mean: {length} \n')
+    print(outstr[2])
+
+    with open(astp_output, encoding='utf-8', mode='w+') as f:
+        for s in outstr:
+            f.write(s)
 
 
 if __name__ == "__main__":
@@ -251,22 +283,17 @@ if __name__ == "__main__":
     start = time.time()
     df = import_data(filename)
     read_t = time.time()
-    print(f"\nRead data time : {read_t - start}\n")
-
-    #G = df_to_graph(df)
-    graph_t = time.time()
-    print(f"\nAdd to graph time : {graph_t - read_t}\n")
-
-    # plot a small network structure sneakpeak
-    plot_small_df(df)
-
+    print(f"\nRead data time : {read_t - start} sec \n")
 
     G = df_to_graph(df)
     graph_t = time.time()
-    print(f"\nAdd to graph time : {graph_t - read_t}\n")
+    print(f"\nAdd to graph time : {graph_t - read_t} sec \n")
+
+    # plot a small network structure sneakpeak
+    #plot_small_df(df)
 
     # plot histogram
-    plot_hist(G)
+    #plot_hist(G)
 
     """
     # realword network has:
@@ -275,9 +302,10 @@ if __name__ == "__main__":
     # (3) shorts average path length (y)
     """
     # plot degree density
-    plot_degree_dens(G)
+    #plot_degree_dens(G)
 
     get_astp(G)
+
     end = time.time()
-    print(f"\nTotal runtime : {end - start}\n")
+    print(f"\nTotal runtime : {end - start} sec \n")
     # """

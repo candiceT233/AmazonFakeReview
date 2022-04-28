@@ -244,8 +244,21 @@ def get_astp(G):
   print("Getting averaged shortest path ...")
   output_path='outputs/amazon_network_aveSTP_cluster.txt'
 
-  length = nx.average_shortest_path_length(G)
   ave_clus = nx.average_clustering(G)
+
+  UG = G.to_undirected()
+  #length = nx.average_shortest_path_length(UG)
+
+  nodes=UG.nodes()
+  lengths = []
+  n_samples=5000
+
+  while len(lengths) == 0:
+      for n in range(n_samples):
+          n1, n2 = random.choices(list(nodes), k=2)
+          lengths.append(nx.shortest_path_length(UG, source=n1, target=n2))
+  length = sum(lengths)/len(lengths)
+
   with open(output_path, encoding='utf-8', mode='w+') as f:
       f.write(f'Averate Clustering Coefficients: {ave_clus}\n')
       f.write(f'Nodes num: {len(G.nodes())}, average shortest path: {length}\n')
@@ -259,14 +272,14 @@ if __name__ == "__main__":
     df = import_data(file)
     df = normalize(df)
     read_t = time.time()
-    print(f"\nRead data time : {read_t - start}\n")
+    print(f"\nRead data time : {read_t - start} sec \n")
 
     observe_dataset(df)
 
 
     G = df_to_graph(df)
     graph_t = time.time()
-    print(f"\nAdd to graph time : {graph_t - read_t}\n")
+    print(f"\nAdd to graph time : {graph_t - read_t} sec \n")
 
     # plot a small network structure sneakpeak
     plot_small_df(df)
@@ -287,5 +300,5 @@ if __name__ == "__main__":
     #"""
     get_astp(G)
     end = time.time()
-    print(f"\nTotal runtime : {end - start}\n")
+    print(f"\nTotal runtime : {end - start} sec \n")
     #"""
