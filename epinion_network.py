@@ -252,7 +252,7 @@ def get_astp(G):
     outstr = []
 
     ave_clus = nx.average_clustering(G)
-    outstr.append(f'Averate Clustering Coefficients: {ave_clus}\n')
+    outstr.append(f'Average Clustering Coefficients: {ave_clus}\n')
     print(outstr[0])
 
     # get averaged shortest path
